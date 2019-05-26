@@ -7,6 +7,7 @@ use std::sync::{Arc, Mutex};
 use byteorder::{NativeEndian, WriteBytesExt};
 
 use crate::theme::WaylandTheme;
+use rusttype::{point, FontCollection, PositionedGlyph, Scale};
 use smithay_client_toolkit::keyboard::{
     map_keyboard_auto_with_repeat, Event as KbEvent, KeyRepeatEvent, KeyRepeatKind,
 };
@@ -17,6 +18,48 @@ use smithay_client_toolkit::window::{ConceptFrame, Event as WEvent, Window};
 use smithay_client_toolkit::Environment;
 
 fn main() {
+    let font_data = include_bytes!("../DejaVuSansMono.ttf");
+    let collection = FontCollection::from_bytes(font_data as &[u8]).unwrap_or_else(|e| {
+        panic!("error constructing a FontCollection from bytes: {}", e);
+    });
+    let font = collection
+        .into_font() // only succeeds if collection consists of one font
+        .unwrap_or_else(|e| {
+            panic!("error turning FontCollection into a Font: {}", e);
+        });
+
+    // Desired font pixel height
+    let height: f32 = 12.4; // to get 80 chars across (fits most terminals); adjust as desired
+    let pixel_height = height.ceil() as usize;
+
+    // 2x scale in x direction to counter the aspect ratio of monospace characters.
+    let scale = Scale {
+        x: height * 2.0,
+        y: height,
+    };
+
+    // The origin of a line of text is at the baseline (roughly where
+    // non-descending letters sit). We don't want to clip the text, so we shift
+    // it down with an offset when laying it out. v_metrics.ascent is the
+    // distance between the baseline and the highest edge of any glyph in
+    // the font. That's enough to guarantee that there's no clipping.
+    let v_metrics = font.v_metrics(scale);
+    let offset = point(0.0, v_metrics.ascent);
+
+    // Glyphs to draw for "RustType". Feel free to try other strings.
+    let glyphs: Vec<PositionedGlyph<'_>> = font.layout("RustType", scale, offset).collect();
+
+    // Find the most visually pleasing width to display
+    let width = glyphs
+        .iter()
+        .rev()
+        .map(|g| g.position().x as f32 + g.unpositioned().h_metrics().advance_width)
+        .next()
+        .unwrap_or(0.0)
+        .ceil() as usize;
+
+    println!("width: {}, height: {}", width, pixel_height);
+
     let (display, mut event_queue) = Display::connect_to_env().unwrap();
     let env = Environment::from_display(&*display, &mut event_queue).unwrap();
     /*
@@ -85,6 +128,7 @@ fn main() {
         .unwrap();
 
     window.new_seat(&seat);
+    let mut command = String::new();
 
     map_keyboard_auto_with_repeat(
         &seat,
@@ -104,7 +148,8 @@ fn main() {
             } => {
                 println!("Key {:?}: {:x}.", state, keysym);
                 if let Some(txt) = utf8 {
-                    println!(" -> Received text \"{}\".", txt);
+                    command.push_str(&txt);
+                    println!(" -> Received text \"{}\".", command);
                 }
             }
             KbEvent::RepeatInfo { rate, delay } => {
@@ -128,7 +173,7 @@ fn main() {
     if !env.shell.needs_configure() {
         // initial draw to bootstrap on wl_shell
         if let Some(pool) = pools.pool() {
-            redraw(pool, window.surface(), dimensions).expect("Failed to draw")
+            redraw(pool, window.surface(), dimensions, &glyphs).expect("Failed to draw")
         }
         window.refresh();
     }
@@ -148,7 +193,7 @@ fn main() {
                 println!("Window states: {:?}", states);
                 window.refresh();
                 if let Some(pool) = pools.pool() {
-                    redraw(pool, window.surface(), dimensions).expect("Failed to draw")
+                    redraw(pool, window.surface(), dimensions, &glyphs).expect("Failed to draw")
                 }
             }
             None => {}
@@ -158,28 +203,21 @@ fn main() {
     }
 }
 
+fn draw_line(abc: u8) {}
+
 fn redraw(
     pool: &mut MemPool,
     surface: &wl_surface::WlSurface,
     (buf_x, buf_y): (u32, u32),
+    positioned_glyph: &[PositionedGlyph],
 ) -> Result<(), ::std::io::Error> {
     // resize the pool if relevant
     pool.resize((4 * buf_x * buf_y) as usize)
         .expect("Failed to resize the memory pool.");
     // write the contents, a nice color gradient =)
     pool.seek(SeekFrom::Start(0))?;
-    {
-        let mut writer = BufWriter::new(&mut *pool);
-        for i in 0..(buf_x * buf_y) {
-            let x = (i % buf_x) as u32;
-            let y = (i / buf_x) as u32;
-            let r: u32 = min(((buf_x - x) * 0xFF) / buf_x, ((buf_y - y) * 0xFF) / buf_y);
-            let g: u32 = min((x * 0xFF) / buf_x, ((buf_y - y) * 0xFF) / buf_y);
-            let b: u32 = min(((buf_x - x) * 0xFF) / buf_x, (y * 0xFF) / buf_y);
-            writer.write_u32::<NativeEndian>((0xFF << 24) + (r << 16) + (g << 8) + b)?;
-        }
-        writer.flush()?;
-    }
+    let lol_kek: &mut [u8] = pool.mmap();
+    lol_kek[150] = 255;
     // get a buffer and attach it
     let new_buffer = pool.buffer(
         0,
