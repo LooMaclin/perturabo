@@ -1,3 +1,4 @@
+mod draw;
 mod theme;
 
 use std::cmp::min;
@@ -203,7 +204,9 @@ fn main() {
     }
 }
 
-fn draw_line(abc: u8) {}
+fn draw_point(buf: &mut [u8], x: u32, y: u32, w: u32) {
+    buf[(x * 4 + y * (w * 4)) as usize] = 255;
+}
 
 fn redraw(
     pool: &mut MemPool,
@@ -216,8 +219,8 @@ fn redraw(
         .expect("Failed to resize the memory pool.");
     // write the contents, a nice color gradient =)
     pool.seek(SeekFrom::Start(0))?;
-    let lol_kek: &mut [u8] = pool.mmap();
-    lol_kek[150] = 255;
+    let mut lol_kek: &mut [u8] = pool.mmap();
+    //    draw_line(&mut lol_kek, buf_x, buf_y);
     // get a buffer and attach it
     let new_buffer = pool.buffer(
         0,
