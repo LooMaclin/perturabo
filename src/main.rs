@@ -1,15 +1,12 @@
 mod draw;
 mod theme;
 
-use std::cmp::min;
-use std::io::{BufWriter, Seek, SeekFrom, Write};
+use std::io::{Seek, SeekFrom};
 use std::sync::{Arc, Mutex};
-
-use byteorder::{NativeEndian, WriteBytesExt};
 
 use crate::draw::Draw;
 use crate::theme::WaylandTheme;
-use megaui::types::Point2;
+use megaui::types::{Color, Point2};
 use megaui::Context;
 use rusttype::{point, FontCollection, PositionedGlyph, Scale};
 use smithay_client_toolkit::keyboard::{
@@ -228,8 +225,12 @@ fn redraw(
         height: buf_y,
         buff,
     };
-    draw.point(15, 15, 255, 0, 0, 0);
-    draw.draw_line(Point2 { x: 25.0, y: 50.0 }, Point2 { x: 125.0, y: 0.0 }, "");
+    draw.point(15, 15, Color::from_rgba(255, 0, 0, 0));
+    draw.draw_line(
+        Point2 { x: 25.0, y: 50.0 },
+        Point2 { x: 125.0, y: 0.0 },
+        Color::from_rgba(255, 0, 0, 0),
+    );
     //    draw.point(250, 250, 0, 0, 255, 0);
     let new_buffer = pool.buffer(
         0,

@@ -1,4 +1,4 @@
-use megaui::types::{Point2, Rect, RectAttr, Vector2};
+use megaui::types::{Color, Point2, Rect, RectAttr, Vector2};
 use megaui::Context;
 
 pub struct Draw<'a> {
@@ -8,10 +8,11 @@ pub struct Draw<'a> {
 }
 
 impl<'a> Draw<'a> {
-    pub fn point(&mut self, x: u32, y: u32, r: u8, g: u8, b: u8, a: u8) {
+    pub fn point(&mut self, x: u32, y: u32, color: Color) {
         let y_offset = y * (self.width * 4);
         let x_offset = x * 4;
         let position = (x_offset + y_offset) as usize;
+        let (r, g, b, a) = color.to_rgba();
         self.buff[position] = b;
         self.buff[position + 1] = g;
         self.buff[position + 2] = r;
@@ -39,9 +40,14 @@ impl<'a> Context for Draw<'a> {
         unimplemented!()
     }
 
-    fn draw_line(&mut self, start: Point2, end: Point2, color: &str) {
-        (start.x as u32..=end.x as u32)
-            .for_each(|x| self.point(x as u32, start.y as u32, 255, 0, 0, 0));
+    fn draw_line<T>(&mut self, start: Point2, end: Point2, color: T)
+    where
+        T: Into<Color>,
+    {
+        let color = color.into();
+        for x in start.x as u32..=end.x as u32 {
+            self.point(x as u32, start.y as u32, color);
+        }
     }
 
     fn clip(&mut self, rect: Option<Rect>) {
