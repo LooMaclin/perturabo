@@ -7,7 +7,10 @@ use std::sync::{Arc, Mutex};
 
 use byteorder::{NativeEndian, WriteBytesExt};
 
+use crate::draw::Draw;
 use crate::theme::WaylandTheme;
+use megaui::types::Point2;
+use megaui::Context;
 use rusttype::{point, FontCollection, PositionedGlyph, Scale};
 use smithay_client_toolkit::keyboard::{
     map_keyboard_auto_with_repeat, Event as KbEvent, KeyRepeatEvent, KeyRepeatKind,
@@ -219,9 +222,15 @@ fn redraw(
         .expect("Failed to resize the memory pool.");
     // write the contents, a nice color gradient =)
     pool.seek(SeekFrom::Start(0))?;
-    let mut lol_kek: &mut [u8] = pool.mmap();
-    //    draw_line(&mut lol_kek, buf_x, buf_y);
-    // get a buffer and attach it
+    let mut buff: &mut [u8] = pool.mmap();
+    let mut draw = Draw {
+        width: buf_x,
+        height: buf_y,
+        buff,
+    };
+    draw.point(15, 15, 255, 0, 0, 0);
+    draw.draw_line(Point2 { x: 25.0, y: 50.0 }, Point2 { x: 125.0, y: 0.0 }, "");
+    //    draw.point(250, 250, 0, 0, 255, 0);
     let new_buffer = pool.buffer(
         0,
         buf_x as i32,
