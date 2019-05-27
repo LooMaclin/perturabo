@@ -12,10 +12,10 @@ impl<'a> Draw<'a> {
         let y_offset = y * (self.width * 4);
         let x_offset = x * 4;
         let position = (x_offset + y_offset) as usize;
-        self.buff[position] = a;
-        self.buff[position + 1] = r;
-        self.buff[position + 2] = g;
-        self.buff[position + 3] = b;
+        self.buff[position] = b;
+        self.buff[position + 1] = g;
+        self.buff[position + 2] = r;
+        self.buff[position + 3] = a;
     }
 }
 
