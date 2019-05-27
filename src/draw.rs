@@ -37,7 +37,50 @@ impl<'a> Context for Draw<'a> {
     }
 
     fn draw_rect(&mut self, rect: Rect, attrs: &[RectAttr]) {
-        unimplemented!()
+        self.draw_line(
+            Point2 {
+                x: rect.x,
+                y: rect.y,
+            },
+            Point2 {
+                x: rect.x + rect.w,
+                y: rect.y,
+            },
+            Color::from_rgba(255, 0, 0, 0),
+        );
+        self.draw_line(
+            Point2 {
+                x: rect.x,
+                y: rect.y,
+            },
+            Point2 {
+                x: rect.x,
+                y: rect.y + rect.h,
+            },
+            Color::from_rgba(255, 0, 0, 0),
+        );
+        self.draw_line(
+            Point2 {
+                x: rect.x + rect.w,
+                y: rect.y,
+            },
+            Point2 {
+                x: rect.x + rect.w,
+                y: rect.y + rect.h,
+            },
+            Color::from_rgba(255, 0, 0, 0),
+        );
+        self.draw_line(
+            Point2 {
+                x: rect.x,
+                y: rect.y + rect.h,
+            },
+            Point2 {
+                x: rect.x + rect.w,
+                y: rect.y + rect.h,
+            },
+            Color::from_rgba(255, 0, 0, 0),
+        );
     }
 
     fn draw_line<T>(&mut self, start: Point2, end: Point2, color: T)
@@ -45,8 +88,14 @@ impl<'a> Context for Draw<'a> {
         T: Into<Color>,
     {
         let color = color.into();
-        for x in start.x as u32..=end.x as u32 {
-            self.point(x as u32, start.y as u32, color);
+        if start.x != end.x {
+            for x in start.x as u32..=end.x as u32 {
+                self.point(x as u32, start.y as u32, color);
+            }
+        } else {
+            for y in start.y as u32..=end.y as u32 {
+                self.point(start.x as u32, y, color);
+            }
         }
     }
 
