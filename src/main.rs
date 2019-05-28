@@ -225,6 +225,7 @@ fn redraw(
         height: buf_y,
         buff,
     };
+    draw.fill(Color::from_rgba(0, 0, 0, 255));
     draw.point(5, 5, Color::from_rgba(255, 0, 0, 0));
     draw.draw_line(
         Point2 { x: 25.0, y: 50.0 },
@@ -240,6 +241,7 @@ fn redraw(
         },
         &[],
     );
+    draw.draw_label("Perturabo", Point2 { x: 25.0, y: 250.0 }, None, None, None);
     let new_buffer = pool.buffer(
         0,
         buf_x as i32,
