@@ -7,6 +7,7 @@ use std::sync::{Arc, Mutex};
 use crate::draw::Draw;
 use crate::theme::WaylandTheme;
 use megaui::hash;
+use megaui::input_handler::InputHandler;
 use megaui::types::{Point2, Vector2};
 use megaui::Ui;
 use rusttype::{point, FontCollection, PositionedGlyph, Scale};
@@ -137,10 +138,12 @@ fn main() {
 
     enum MouseEvent {
         Move(Point2),
+        Pressed(Point2),
+        Up(Point2),
     }
 
     let (mouse_events_sender, mouse_events_receiver) = sync_channel(1);
-
+    let mut mouse_position = Point2::new(0.0, 0.0);
     seat.get_pointer(|ptr| {
         ptr.implement_closure(
             move |evt, _| match evt {
@@ -161,6 +164,15 @@ fn main() {
                 }
                 wl_pointer::Event::Button { button, state, .. } => {
                     println!("Button {:?} was {:?}", button, state);
+                    match state {
+                        wl_pointer::ButtonState::Pressed => {
+                            mouse_events_sender.send(MouseEvent::Pressed(mouse_position));
+                        }
+                        wl_pointer::ButtonState::Released => {
+                            mouse_events_sender.send(MouseEvent::Up(mouse_position));
+                        }
+                        _ => {}
+                    }
                 }
                 wl_pointer::Event::Motion {
                     surface_x,
@@ -169,10 +181,8 @@ fn main() {
                 } => {
                     println!("Pointer motion to ({}, {})", surface_x, surface_y);
                     //                    ui.mouse_move(Point2::new(surface_x as f32, surface_y as f32));
-                    mouse_events_sender.send(MouseEvent::Move(Point2::new(
-                        surface_x as f32,
-                        surface_y as f32,
-                    )));
+                    mouse_position = Point2::new(surface_x as f32, surface_y as f32);
+                    mouse_events_sender.send(MouseEvent::Move(mouse_position));
                 }
                 _ => {}
             },
@@ -232,8 +242,16 @@ fn main() {
         if let Ok(mouse_event) = mouse_events_receiver.try_recv() {
             match mouse_event {
                 MouseEvent::Move(point) => {
+                    println!("mouse event move received");
                     ui.mouse_move(point);
-                    println!("mouse event received");
+                }
+                MouseEvent::Pressed(point) => {
+                    println!("mouse event pressed received");
+                    ui.mouse_down(point);
+                }
+                MouseEvent::Up(point) => {
+                    println!("mouse event up received");
+                    ui.mouse_up(point);
                 }
             }
         }
