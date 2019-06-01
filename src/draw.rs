@@ -23,18 +23,18 @@ impl<'a> Draw<'a> {
         });
     }
     pub fn point(&mut self, x: u32, y: u32, color: Color) {
-        let y_offset = y * (self.width * 4);
-        let x_offset = x * 4;
         let visible = self
             .draw_rect
             .map(|draw_rect| {
-                x_offset > draw_rect.x as u32
-                    && y_offset > draw_rect.y as u32
-                    && x_offset < draw_rect.x as u32 + draw_rect.w as u32
-                    && y_offset < draw_rect.y as u32 + draw_rect.h as u32
+                x > draw_rect.x as u32
+                    && y > draw_rect.y as u32
+                    && x < draw_rect.x as u32 + draw_rect.w as u32
+                    && y < draw_rect.y as u32 + draw_rect.h as u32
             })
             .unwrap_or(true);
         if visible {
+            let y_offset = y * (self.width * 4);
+            let x_offset = x * 4;
             let position = (x_offset + y_offset) as usize;
             let (r, g, b, a) = color.to_rgba();
             self.buff[position] = b;
