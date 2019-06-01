@@ -19,6 +19,7 @@ use smithay_client_toolkit::reexports::client::{Display, NewProxy};
 use smithay_client_toolkit::utils::{DoubleMemPool, MemPool};
 use smithay_client_toolkit::window::{ConceptFrame, Event as WEvent, Window};
 use smithay_client_toolkit::Environment;
+use std::sync::mpsc::{channel, sync_channel};
 
 fn main() {
     let font_data = include_bytes!("../DejaVuSansMono.ttf");
@@ -133,41 +134,52 @@ fn main() {
     window.new_seat(&seat);
     let mut ui = Ui::new();
     let main_surface = window.surface().clone();
-    //    seat.get_pointer(|ptr| {
-    //        ptr.implement_closure(
-    //            move |evt, _| match evt {
-    //                wl_pointer::Event::Enter {
-    //                    surface,
-    //                    surface_x,
-    //                    surface_y,
-    //                    ..
-    //                } => {
-    //                    if main_surface == surface {
-    //                        println!("Pointer entered at ({}, {})", surface_x, surface_y);
-    //                    }
-    //                }
-    //                wl_pointer::Event::Leave { surface, .. } => {
-    //                    if main_surface == surface {
-    //                        println!("Pointer left");
-    //                    }
-    //                }
-    //                wl_pointer::Event::Button { button, state, .. } => {
-    //                    println!("Button {:?} was {:?}", button, state);
-    //                }
-    //                wl_pointer::Event::Motion {
-    //                    surface_x,
-    //                    surface_y,
-    //                    ..
-    //                } => {
-    //                    println!("Pointer motion to ({}, {})", surface_x, surface_y);
-    //                    ui.mouse_move(Point2::new(surface_x as f32, surface_y as f32));
-    //                }
-    //                _ => {}
-    //            },
-    //            (),
-    //        )
-    //    })
-    //    .unwrap();
+
+    enum MouseEvent {
+        Move(Point2),
+    }
+
+    let (mouse_events_sender, mouse_events_receiver) = sync_channel(1);
+
+    seat.get_pointer(|ptr| {
+        ptr.implement_closure(
+            move |evt, _| match evt {
+                wl_pointer::Event::Enter {
+                    surface,
+                    surface_x,
+                    surface_y,
+                    ..
+                } => {
+                    if main_surface == surface {
+                        println!("Pointer entered at ({}, {})", surface_x, surface_y);
+                    }
+                }
+                wl_pointer::Event::Leave { surface, .. } => {
+                    if main_surface == surface {
+                        println!("Pointer left");
+                    }
+                }
+                wl_pointer::Event::Button { button, state, .. } => {
+                    println!("Button {:?} was {:?}", button, state);
+                }
+                wl_pointer::Event::Motion {
+                    surface_x,
+                    surface_y,
+                    ..
+                } => {
+                    println!("Pointer motion to ({}, {})", surface_x, surface_y);
+                    //                    ui.mouse_move(Point2::new(surface_x as f32, surface_y as f32));
+                    mouse_events_sender.send(MouseEvent::Move(Point2::new(
+                        surface_x as f32,
+                        surface_y as f32,
+                    )));
+                }
+                _ => {}
+            },
+            (),
+        )
+    })
+    .unwrap();
 
     map_keyboard_auto_with_repeat(
         &seat,
@@ -217,6 +229,14 @@ fn main() {
     }
 
     loop {
+        if let Ok(mouse_event) = mouse_events_receiver.try_recv() {
+            match mouse_event {
+                MouseEvent::Move(point) => {
+                    ui.mouse_move(point);
+                    println!("mouse event received");
+                }
+            }
+        }
         match next_action.lock().unwrap().take() {
             Some(WEvent::Close) => break,
             Some(WEvent::Refresh) => {
