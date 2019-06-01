@@ -142,7 +142,7 @@ fn main() {
         Up(Point2),
     }
 
-    let (mouse_events_sender, mouse_events_receiver) = sync_channel(1);
+    let (mouse_events_sender, mouse_events_receiver) = channel();
     let mut mouse_position = Point2::new(0.0, 0.0);
     seat.get_pointer(|ptr| {
         ptr.implement_closure(
