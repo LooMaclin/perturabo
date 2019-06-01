@@ -179,7 +179,7 @@ fn main() {
                     surface_y,
                     ..
                 } => {
-                    println!("Pointer motion to ({}, {})", surface_x, surface_y);
+                    //                    println!("Pointer motion to ({}, {})", surface_x, surface_y);
                     //                    ui.mouse_move(Point2::new(surface_x as f32, surface_y as f32));
                     mouse_position = Point2::new(surface_x as f32, surface_y as f32);
                     mouse_events_sender.send(MouseEvent::Move(mouse_position));
@@ -242,15 +242,15 @@ fn main() {
         if let Ok(mouse_event) = mouse_events_receiver.try_recv() {
             match mouse_event {
                 MouseEvent::Move(point) => {
-                    println!("mouse event move received");
+                    //                    println!("mouse event move received");
                     ui.mouse_move(point);
                 }
                 MouseEvent::Pressed(point) => {
-                    println!("mouse event pressed received");
+                    //                    println!("mouse event pressed received");
                     ui.mouse_down(point);
                 }
                 MouseEvent::Up(point) => {
-                    println!("mouse event up received");
+                    //                    println!("mouse event up received");
                     ui.mouse_up(point);
                 }
             }
@@ -299,14 +299,16 @@ fn redraw(
         width: buf_x,
         height: buf_y,
         buff,
+        draw_rect: None,
     };
     ui.begin_frame();
     let mut counter = 0;
-    megaui::widgets::Window::new(hash!(), Point2::new(50., 50.), Vector2::new(200., 100.)).ui(
+    megaui::widgets::Window::new(hash!(), Point2::new(0., 0.), Vector2::new(319., 239.)).ui(
         ui,
         |ui| {
-            ui.label(Point2::new(20., 20.), &format!("Counter: {}", counter));
-            if ui.button(Point2::new(100., 50.), hash!(), "increment") {
+            ui.label(Point2::new(0., 0.), &format!("Counter: {}", counter));
+            if ui.button(Point2::new(0., 100.), hash!(), "increment") {
+                println!("button clicked");
                 counter += 1;
             }
         },

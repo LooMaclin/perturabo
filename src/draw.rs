@@ -6,6 +6,7 @@ pub struct Draw<'a> {
     pub width: u32,
     pub height: u32,
     pub buff: &'a mut [u8],
+    pub draw_rect: Option<Rect>,
 }
 
 impl<'a> Draw<'a> {
@@ -22,14 +23,29 @@ impl<'a> Draw<'a> {
         });
     }
     pub fn point(&mut self, x: u32, y: u32, color: Color) {
-        let y_offset = y * (self.width * 4);
-        let x_offset = x * 4;
-        let position = (x_offset + y_offset) as usize;
-        let (r, g, b, a) = color.to_rgba();
-        self.buff[position] = b;
-        self.buff[position + 1] = g;
-        self.buff[position + 2] = r;
-        self.buff[position + 3] = a;
+        if let Some(draw_rect) = self.draw_rect {
+            let y_offset = (draw_rect.y as u32 + y) * (self.width * 4);
+            let x_offset = (draw_rect.x as u32 + x) * 4;
+            if x_offset < draw_rect.x as u32 + draw_rect.w as u32
+                && y_offset < draw_rect.y as u32 + draw_rect.h as u32
+            {
+                let position = (x_offset + y_offset) as usize;
+                let (r, g, b, a) = color.to_rgba();
+                self.buff[position] = b;
+                self.buff[position + 1] = g;
+                self.buff[position + 2] = r;
+                self.buff[position + 3] = a;
+            }
+        } else {
+            let y_offset = y * (self.width * 4);
+            let x_offset = x * 4;
+            let position = (x_offset + y_offset) as usize;
+            let (r, g, b, a) = color.to_rgba();
+            self.buff[position] = b;
+            self.buff[position + 1] = g;
+            self.buff[position + 2] = r;
+            self.buff[position + 3] = a;
+        }
     }
 }
 
@@ -155,7 +171,7 @@ impl<'a> Context for Draw<'a> {
         }
     }
 
-    fn clip(&mut self, _rect: Option<Rect>) {
-        println!("clip");
+    fn clip(&mut self, rect: Option<Rect>) {
+        self.draw_rect = rect;
     }
 }
