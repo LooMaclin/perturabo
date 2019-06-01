@@ -303,12 +303,11 @@ fn redraw(
     };
     ui.begin_frame();
     let mut counter = 0;
-    megaui::widgets::Window::new(hash!(), Point2::new(0., 0.), Vector2::new(319., 239.)).ui(
+    megaui::widgets::Window::new(hash!(), Point2::new(50., 50.), Vector2::new(200., 100.)).ui(
         ui,
         |ui| {
-            ui.label(Point2::new(0., 0.), &format!("Counter: {}", counter));
-            if ui.button(Point2::new(0., 100.), hash!(), "increment") {
-                println!("button clicked");
+            ui.label(Point2::new(20., 20.), &format!("Counter: {}", counter));
+            if ui.button(Point2::new(100., 50.), hash!(), "increment") {
                 counter += 1;
             }
         },
