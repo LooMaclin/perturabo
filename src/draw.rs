@@ -26,10 +26,10 @@ impl<'a> Draw<'a> {
         let visible = self
             .draw_rect
             .map(|draw_rect| {
-                x > draw_rect.x as u32
-                    && y > draw_rect.y as u32
-                    && x < draw_rect.x as u32 + draw_rect.w as u32
-                    && y < draw_rect.y as u32 + draw_rect.h as u32
+                x >= draw_rect.x as u32
+                    && y >= draw_rect.y as u32
+                    && x <= draw_rect.x as u32 + draw_rect.w as u32
+                    && y <= draw_rect.y as u32 + draw_rect.h as u32
             })
             .unwrap_or(true);
         if visible {
