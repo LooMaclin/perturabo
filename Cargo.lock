@@ -130,7 +130,7 @@ dependencies = [
 [[package]]
 name = "megaui"
 version = "0.1.0"
-source = "git+https://github.com/LooMaclin/megaui.git?branch=add_color_type#fd3d0eaa5bf1965a41299b71d148bf5b422b6492"
+source = "git+https://github.com/not-fl3/megaui.git#ef6b99365ecb51bfd6b4bb810677ac4a40775c48"
 dependencies = [
  "cgmath 0.16.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "smart-default 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -192,7 +192,7 @@ version = "0.1.0"
 dependencies = [
  "byteorder 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "itertools 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "megaui 0.1.0 (git+https://github.com/LooMaclin/megaui.git?branch=add_color_type)",
+ "megaui 0.1.0 (git+https://github.com/not-fl3/megaui.git)",
  "rusttype 0.7.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "smithay-client-toolkit 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -437,7 +437,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum libc 0.2.55 (registry+https://github.com/rust-lang/crates.io-index)" = "42914d39aad277d9e176efbdad68acb1d5443ab65afe0e0e4f0d49352a950880"
 "checksum libloading 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9c3ad660d7cb8c5822cd83d10897b0f1f1526792737a179e73896152f85b88c2"
 "checksum line_drawing 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5cc7ad3d82c845bdb5dde34ffdcc7a5fb4d2996e1e1ee0f19c33bc80e15196b9"
-"checksum megaui 0.1.0 (git+https://github.com/LooMaclin/megaui.git?branch=add_color_type)" = "<none>"
+"checksum megaui 0.1.0 (git+https://github.com/not-fl3/megaui.git)" = "<none>"
 "checksum memmap 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "6585fd95e7bb50d6cc31e20d4cf9afb4e2ba16c5846fc76793f11218da9c475b"
 "checksum nix 0.13.0 (registry+https://github.com/rust-lang/crates.io-index)" = "46f0f3210768d796e8fa79ec70ee6af172dacbe7147f5e69be5240a47778302b"
 "checksum nodrop 0.1.13 (registry+https://github.com/rust-lang/crates.io-index)" = "2f9667ddcc6cc8a43afc9b7917599d7216aa09c463919ea32c59ed6cac8bc945"

@@ -7,12 +7,13 @@ use std::sync::{Arc, Mutex};
 use crate::draw::Draw;
 use crate::theme::WaylandTheme;
 use megaui::hash;
-use megaui::types::{Color, Point2, Rect, Vector2};
-use megaui::{Context, Ui};
+use megaui::types::{Point2, Vector2};
+use megaui::Ui;
 use rusttype::{point, FontCollection, PositionedGlyph, Scale};
 use smithay_client_toolkit::keyboard::{
     map_keyboard_auto_with_repeat, Event as KbEvent, KeyRepeatEvent, KeyRepeatKind,
 };
+use smithay_client_toolkit::reexports::client::protocol::wl_pointer;
 use smithay_client_toolkit::reexports::client::protocol::{wl_shm, wl_surface};
 use smithay_client_toolkit::reexports::client::{Display, NewProxy};
 use smithay_client_toolkit::utils::{DoubleMemPool, MemPool};
@@ -130,13 +131,48 @@ fn main() {
         .unwrap();
 
     window.new_seat(&seat);
-    let mut command = String::new();
     let mut ui = Ui::new();
+    let main_surface = window.surface().clone();
+    //    seat.get_pointer(|ptr| {
+    //        ptr.implement_closure(
+    //            move |evt, _| match evt {
+    //                wl_pointer::Event::Enter {
+    //                    surface,
+    //                    surface_x,
+    //                    surface_y,
+    //                    ..
+    //                } => {
+    //                    if main_surface == surface {
+    //                        println!("Pointer entered at ({}, {})", surface_x, surface_y);
+    //                    }
+    //                }
+    //                wl_pointer::Event::Leave { surface, .. } => {
+    //                    if main_surface == surface {
+    //                        println!("Pointer left");
+    //                    }
+    //                }
+    //                wl_pointer::Event::Button { button, state, .. } => {
+    //                    println!("Button {:?} was {:?}", button, state);
+    //                }
+    //                wl_pointer::Event::Motion {
+    //                    surface_x,
+    //                    surface_y,
+    //                    ..
+    //                } => {
+    //                    println!("Pointer motion to ({}, {})", surface_x, surface_y);
+    //                    ui.mouse_move(Point2::new(surface_x as f32, surface_y as f32));
+    //                }
+    //                _ => {}
+    //            },
+    //            (),
+    //        )
+    //    })
+    //    .unwrap();
 
     map_keyboard_auto_with_repeat(
         &seat,
         KeyRepeatKind::System,
-        move |event: KbEvent, _| match event {
+        |event: KbEvent, _| match event {
             KbEvent::Enter { keysyms, .. } => {
                 println!("Gained focus while {} keys pressed.", keysyms.len(),);
             }
@@ -151,8 +187,7 @@ fn main() {
             } => {
                 println!("Key {:?}: {:x}.", state, keysym);
                 if let Some(txt) = utf8 {
-                    command.push_str(&txt);
-                    println!(" -> Received text \"{}\".", command);
+                    println!(" -> Received text \"{}\".", txt);
                 }
             }
             KbEvent::RepeatInfo { rate, delay } => {
@@ -221,7 +256,7 @@ fn redraw(
         .expect("Failed to resize the memory pool.");
     // write the contents, a nice color gradient =)
     pool.seek(SeekFrom::Start(0))?;
-    let mut buff: &mut [u8] = pool.mmap();
+    let buff: &mut [u8] = pool.mmap();
     let mut draw = Draw {
         width: buf_x,
         height: buf_y,

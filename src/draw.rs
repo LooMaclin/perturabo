@@ -1,5 +1,4 @@
-use itertools::Itertools;
-use megaui::types::{Color, Point2, Rect, RectAttr, Vector2};
+use megaui::types::{Color, Point2, Rect, Vector2};
 use megaui::Context;
 use rusttype::{point, FontCollection, Scale};
 
@@ -35,13 +34,13 @@ impl<'a> Draw<'a> {
 }
 
 impl<'a> Context for Draw<'a> {
-    fn draw_label(
+    fn draw_label<T: Into<Color>>(
         &mut self,
         label: &str,
         position: Point2,
         _: Option<()>,
         _: Option<()>,
-        color: Option<&str>,
+        _color: Option<T>,
     ) {
         let font_data = include_bytes!("../DejaVuSansMono.ttf");
         let collection = FontCollection::from_bytes(font_data as &[u8]).unwrap_or_else(|e| {
@@ -75,12 +74,20 @@ impl<'a> Context for Draw<'a> {
         }
     }
 
-    fn measure_label(&mut self, label: &str, _: Option<()>) -> Vector2 {
+    fn measure_label(&mut self, _label: &str, _: Option<()>) -> Vector2 {
         println!("measure label");
         Vector2::new(200., 100.)
     }
 
-    fn draw_rect(&mut self, rect: Rect, attrs: &[RectAttr]) {
+    fn draw_rect<S, T>(&mut self, rect: Rect, stroke: S, fill: T)
+    where
+        S: Into<Option<Color>>,
+        T: Into<Option<Color>>,
+    {
+        let stroke_color = stroke
+            .into()
+            .unwrap_or_else(|| Color::from_rgba(255, 0, 0, 0));
+
         self.draw_line(
             Point2 {
                 x: rect.x,
@@ -90,7 +97,7 @@ impl<'a> Context for Draw<'a> {
                 x: rect.x + rect.w,
                 y: rect.y,
             },
-            Color::from_rgba(255, 0, 0, 0),
+            stroke_color,
         );
         self.draw_line(
             Point2 {
@@ -101,7 +108,7 @@ impl<'a> Context for Draw<'a> {
                 x: rect.x,
                 y: rect.y + rect.h,
             },
-            Color::from_rgba(255, 0, 0, 0),
+            stroke_color,
         );
         self.draw_line(
             Point2 {
@@ -112,7 +119,7 @@ impl<'a> Context for Draw<'a> {
                 x: rect.x + rect.w,
                 y: rect.y + rect.h,
             },
-            Color::from_rgba(255, 0, 0, 0),
+            stroke_color,
         );
         self.draw_line(
             Point2 {
@@ -123,7 +130,7 @@ impl<'a> Context for Draw<'a> {
                 x: rect.x + rect.w,
                 y: rect.y + rect.h,
             },
-            Color::from_rgba(255, 0, 0, 0),
+            stroke_color,
         );
     }
 
@@ -143,7 +150,7 @@ impl<'a> Context for Draw<'a> {
         }
     }
 
-    fn clip(&mut self, rect: Option<Rect>) {
+    fn clip(&mut self, _rect: Option<Rect>) {
         println!("clip");
     }
 }

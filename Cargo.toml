@@ -8,5 +8,5 @@ edition = "2018"
 smithay-client-toolkit = "=0.6.1"
 byteorder = "=1.3.1"
 rusttype = "=0.7.6"
-megaui = { git = "https://github.com/LooMaclin/megaui.git", branch = "add_color_type" }
+megaui = { git = "https://github.com/not-fl3/megaui.git" }
 itertools = "=0.8.0"
