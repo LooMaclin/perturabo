@@ -24,7 +24,7 @@ impl<'a> Draw<'a> {
     }
     pub fn point(&mut self, x: u32, y: u32, color: Color) {
         if let Some(draw_rect) = self.draw_rect {
-            let y_offset = (draw_rect.y as u32 + y) * (self.width * 4);
+            let y_offset = (draw_rect.y as u32 + y) * (draw_rect.w * 4);
             let x_offset = (draw_rect.x as u32 + x) * 4;
             if x_offset < draw_rect.x as u32 + draw_rect.w as u32
                 && y_offset < draw_rect.y as u32 + draw_rect.h as u32
