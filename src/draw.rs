@@ -76,7 +76,8 @@ impl<'a> Context for Draw<'a> {
     }
 
     fn measure_label(&mut self, label: &str, _: Option<()>) -> Vector2 {
-        unimplemented!()
+        println!("measure label");
+        Vector2::new(200., 100.)
     }
 
     fn draw_rect(&mut self, rect: Rect, attrs: &[RectAttr]) {
@@ -143,6 +144,6 @@ impl<'a> Context for Draw<'a> {
     }
 
     fn clip(&mut self, rect: Option<Rect>) {
-        unimplemented!()
+        println!("clip");
     }
 }

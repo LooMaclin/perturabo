@@ -6,8 +6,9 @@ use std::sync::{Arc, Mutex};
 
 use crate::draw::Draw;
 use crate::theme::WaylandTheme;
-use megaui::types::{Color, Point2, Rect};
-use megaui::Context;
+use megaui::hash;
+use megaui::types::{Color, Point2, Rect, Vector2};
+use megaui::{Context, Ui};
 use rusttype::{point, FontCollection, PositionedGlyph, Scale};
 use smithay_client_toolkit::keyboard::{
     map_keyboard_auto_with_repeat, Event as KbEvent, KeyRepeatEvent, KeyRepeatKind,
@@ -130,6 +131,7 @@ fn main() {
 
     window.new_seat(&seat);
     let mut command = String::new();
+    let mut ui = Ui::new();
 
     map_keyboard_auto_with_repeat(
         &seat,
@@ -174,7 +176,7 @@ fn main() {
     if !env.shell.needs_configure() {
         // initial draw to bootstrap on wl_shell
         if let Some(pool) = pools.pool() {
-            redraw(pool, window.surface(), dimensions, &glyphs).expect("Failed to draw")
+            redraw(pool, window.surface(), dimensions, &mut ui).expect("Failed to draw")
         }
         window.refresh();
     }
@@ -194,7 +196,7 @@ fn main() {
                 println!("Window states: {:?}", states);
                 window.refresh();
                 if let Some(pool) = pools.pool() {
-                    redraw(pool, window.surface(), dimensions, &glyphs).expect("Failed to draw")
+                    redraw(pool, window.surface(), dimensions, &mut ui).expect("Failed to draw")
                 }
             }
             None => {}
@@ -212,7 +214,7 @@ fn redraw(
     pool: &mut MemPool,
     surface: &wl_surface::WlSurface,
     (buf_x, buf_y): (u32, u32),
-    positioned_glyph: &[PositionedGlyph],
+    ui: &mut Ui,
 ) -> Result<(), ::std::io::Error> {
     // resize the pool if relevant
     pool.resize((4 * buf_x * buf_y) as usize)
@@ -225,23 +227,18 @@ fn redraw(
         height: buf_y,
         buff,
     };
-    draw.fill(Color::from_rgba(0, 0, 0, 255));
-    draw.point(5, 5, Color::from_rgba(255, 0, 0, 0));
-    draw.draw_line(
-        Point2 { x: 25.0, y: 50.0 },
-        Point2 { x: 125.0, y: 0.0 },
-        Color::from_rgba(255, 0, 0, 0),
-    );
-    draw.draw_rect(
-        Rect {
-            x: 15.0,
-            y: 15.0,
-            w: 125.0,
-            h: 50.0,
+    ui.begin_frame();
+    let mut counter = 0;
+    megaui::widgets::Window::new(hash!(), Point2::new(50., 50.), Vector2::new(200., 100.)).ui(
+        ui,
+        |ui| {
+            ui.label(Point2::new(20., 20.), &format!("Counter: {}", counter));
+            if ui.button(Point2::new(100., 50.), hash!(), "increment") {
+                counter += 1;
+            }
         },
-        &[],
     );
-    draw.draw_label("Perturabo", Point2 { x: 25.0, y: 250.0 }, None, None, None);
+    ui.draw(&mut draw);
     let new_buffer = pool.buffer(
         0,
         buf_x as i32,
