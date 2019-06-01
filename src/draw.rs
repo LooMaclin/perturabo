@@ -130,6 +130,13 @@ impl<'a> Context for Draw<'a> {
                 stroke,
             );
         }
+        if let Some(fill) = fill.into() {
+            for x in rect.x as u32 + 1..rect.x as u32 + rect.w as u32 - 1 {
+                for y in rect.y as u32 + 1..rect.y as u32 + rect.h as u32 - 1 {
+                    self.point(x, y, fill);
+                }
+            }
+        }
     }
 
     fn draw_line<T>(&mut self, start: Point2, end: Point2, color: T)
