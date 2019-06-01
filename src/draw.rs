@@ -84,54 +84,52 @@ impl<'a> Context for Draw<'a> {
         S: Into<Option<Color>>,
         T: Into<Option<Color>>,
     {
-        let stroke_color = stroke
-            .into()
-            .unwrap_or_else(|| Color::from_rgba(255, 0, 0, 0));
-
-        self.draw_line(
-            Point2 {
-                x: rect.x,
-                y: rect.y,
-            },
-            Point2 {
-                x: rect.x + rect.w,
-                y: rect.y,
-            },
-            stroke_color,
-        );
-        self.draw_line(
-            Point2 {
-                x: rect.x,
-                y: rect.y,
-            },
-            Point2 {
-                x: rect.x,
-                y: rect.y + rect.h,
-            },
-            stroke_color,
-        );
-        self.draw_line(
-            Point2 {
-                x: rect.x + rect.w,
-                y: rect.y,
-            },
-            Point2 {
-                x: rect.x + rect.w,
-                y: rect.y + rect.h,
-            },
-            stroke_color,
-        );
-        self.draw_line(
-            Point2 {
-                x: rect.x,
-                y: rect.y + rect.h,
-            },
-            Point2 {
-                x: rect.x + rect.w,
-                y: rect.y + rect.h,
-            },
-            stroke_color,
-        );
+        if let Some(stroke) = stroke.into() {
+            self.draw_line(
+                Point2 {
+                    x: rect.x,
+                    y: rect.y,
+                },
+                Point2 {
+                    x: rect.x + rect.w,
+                    y: rect.y,
+                },
+                stroke,
+            );
+            self.draw_line(
+                Point2 {
+                    x: rect.x,
+                    y: rect.y,
+                },
+                Point2 {
+                    x: rect.x,
+                    y: rect.y + rect.h,
+                },
+                stroke,
+            );
+            self.draw_line(
+                Point2 {
+                    x: rect.x + rect.w,
+                    y: rect.y,
+                },
+                Point2 {
+                    x: rect.x + rect.w,
+                    y: rect.y + rect.h,
+                },
+                stroke,
+            );
+            self.draw_line(
+                Point2 {
+                    x: rect.x,
+                    y: rect.y + rect.h,
+                },
+                Point2 {
+                    x: rect.x + rect.w,
+                    y: rect.y + rect.h,
+                },
+                stroke,
+            );
+        }
     }
 
     fn draw_line<T>(&mut self, start: Point2, end: Point2, color: T)
