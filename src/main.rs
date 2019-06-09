@@ -8,7 +8,8 @@ use crate::draw::Draw;
 use crate::theme::WaylandTheme;
 use megaui::hash;
 use megaui::input_handler::InputHandler;
-use megaui::types::{Point2, Vector2};
+use megaui::types::{Color, Point2, Vector2};
+use megaui::Context;
 use megaui::Ui;
 use rusttype::{point, FontCollection, PositionedGlyph, Scale};
 use smithay_client_toolkit::keyboard::{
@@ -71,7 +72,7 @@ fn main() {
      * Create a buffer with window contents
      */
 
-    let mut dimensions = (320u32, 240u32);
+    let mut dimensions = (640u32, 480u32);
 
     /*
      * Init wayland objects
@@ -301,13 +302,16 @@ fn redraw(
         buff,
         draw_rect: None,
     };
+
     ui.begin_frame();
+    draw.fill(Color::new(0., 0., 0., 1.));
     let mut counter = 0;
-    megaui::widgets::Window::new(hash!(), Point2::new(50., 50.), Vector2::new(200., 100.)).ui(
+    megaui::widgets::Window::new(hash!(), Point2::new(0., 0.), Vector2::new(639., 479.)).ui(
         ui,
         |ui| {
-            ui.label(Point2::new(20., 20.), &format!("Counter: {}", counter));
+            ui.label(Point2::new(150., 150.), &format!("Counter: {}", counter));
             if ui.button(Point2::new(100., 50.), hash!(), "increment") {
+                println!("lol");
                 counter += 1;
             }
         },

@@ -37,10 +37,13 @@ impl<'a> Draw<'a> {
             let x_offset = x * 4;
             let position = (x_offset + y_offset) as usize;
             let (r, g, b, a) = color.to_rgba();
-            self.buff[position] = b;
-            self.buff[position + 1] = g;
-            self.buff[position + 2] = r;
-            self.buff[position + 3] = a;
+            self.buff[position] =
+                (self.buff[position] as f32 * (1. - color.a) + color.a * b as f32) as u8;
+            self.buff[position + 1] =
+                (self.buff[position + 1] as f32 * (1. - color.a) + color.a * g as f32) as u8;
+            self.buff[position + 2] =
+                (self.buff[position + 2] as f32 * (1. - color.a) + color.a * r as f32) as u8;
+            self.buff[position + 3] = 255;
         }
     }
 }
@@ -52,23 +55,21 @@ impl<'a> Context for Draw<'a> {
         position: Point2,
         _: Option<()>,
         _: Option<()>,
-        _color: Option<T>,
+        color: Option<T>,
     ) {
+        let color = color.unwrap().into();
         let font_data = include_bytes!("../DejaVuSansMono.ttf");
         let collection = FontCollection::from_bytes(font_data as &[u8]).unwrap_or_else(|e| {
             panic!("error constructing a FontCollection from bytes: {}", e);
         });
-        let font = collection
-            .into_font() // only succeeds if collection consists of one font
-            .unwrap_or_else(|e| {
-                panic!("error turning FontCollection into a Font: {}", e);
-            });
+        let font = collection.into_font().unwrap_or_else(|e| {
+            panic!("error turning FontCollection into a Font: {}", e);
+        });
 
         for glyph in font.layout(label, Scale::uniform(25.0), point(position.x, position.y)) {
             let pos = glyph.position();
             let size = glyph.scale();
             let bb = glyph.pixel_bounding_box();
-            // if no bounding box - we suppose that its invalid character but want it to be draw as empty quad
             let bb = if let Some(bb) = bb {
                 bb
             } else {
@@ -77,11 +78,22 @@ impl<'a> Context for Draw<'a> {
                     max: point((size.x / 2.) as i32, 0),
                 }
             };
+
+            let wtf = font.v_metrics(Scale::uniform(20.0));
             glyph.draw(|x, y, v| {
-                self.buff[(pos.x as u32 * 4
-                    + x * 4
-                    + ((bb.min.y + y as i32 + size.y as i32 - pos.y as i32).max(0) as u32)
-                        * (self.width * 4)) as usize] = (v * 255.) as u8;
+                let y_offset = bb.min.y as i32 + y as i32 + wtf.ascent as i32;
+                if y_offset > 0 {
+                    self.point(
+                        x + pos.x as u32,
+                        y_offset as u32,
+                        Color {
+                            r: v * color.r,
+                            a: v * color.a,
+                            b: v * color.b,
+                            g: v * color.g,
+                        },
+                    );
+                }
             });
         }
     }
